@@ -1,58 +1,84 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Weather App
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A single-page weather application project built with Laravel. Its approved requirements describe current weather, a 5-day forecast, city/region search, optional browser geolocation, and an Arabic/English interface with RTL support.
 
-## About Laravel
+> **Implementation status:** The product requirements and implementation plan are approved, but the current application is still at the Laravel starter stage. The `/` route renders the default welcome view; weather search, forecast data, geolocation, translations, and OpenWeatherMap integration have not yet been implemented.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Project Documents
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- [Intent and product decisions](intent/weather-app.md)
+- [Product requirements (PRD)](docs/PRD-weather-app.md)
+- [Implementation plan](docs/ai-sdlc/weather-app-plan.md)
+- [Agent guidance](AGENTS.md)
+- [Claude Code notes](CLAUDE.md)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Technology
 
-## Learning Laravel
+- PHP 8.3+
+- Laravel 13
+- Blade templates
+- Tailwind CSS 4 with Vite
+- OpenWeatherMap is the planned weather data provider
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Requirements
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Install PHP 8.3 or later, Composer, Node.js, and npm.
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+## Local Setup
 
-## Agentic Development
+From the project root:
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+```sh
+composer install
+cp .env.example .env
+php artisan key:generate
+npm install
+php artisan migrate
+npm run build
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+On Windows PowerShell, use `Copy-Item .env.example .env` instead of `cp`.
 
-## Contributing
+Start the Laravel server:
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```sh
+php artisan serve
+```
 
-## Code of Conduct
+In a separate terminal, start Vite when working on frontend assets:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```sh
+npm run dev
+```
 
-## Security Vulnerabilities
+Alternatively, use the configured Composer development command:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```sh
+composer run dev
+```
 
-## License
+## Weather API Configuration
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+OpenWeatherMap integration is part of the approved requirements but is not yet wired into the current application. When implementing it:
+
+1. Create an API key through OpenWeatherMap.
+2. Add it to the local `.env` file as `OPENWEATHERMAP_API_KEY=your_key_here`.
+3. Keep the key on the Laravel server; do not prefix it with `VITE_`, commit it, or place it in frontend code.
+
+The app should request location only through the browser Geolocation API after user permission. If permission is denied or location is unavailable, users should be able to search for a city or region manually. No IP-based geolocation or browser-side search/location persistence should be added.
+
+## Product Scope
+
+The planned page displays current temperature in Celsius, condition and icon, humidity, wind speed, and a 5-day forecast with daily highs/lows. It supports Arabic and English, with RTL layout for Arabic, and displays API or input errors inline on the same page.
+
+Accounts, authentication, local search history, Fahrenheit, additional About/Contact pages, hourly forecasts, charts, atmospheric pressure/visibility, and severe-weather alerts are out of scope unless the product requirements are revised.
+
+## Tests and Formatting
+
+```sh
+php artisan test
+npm run build
+vendor/bin/pint --test
+```
+
+Weather API tests should mock HTTP responses rather than depend on live OpenWeatherMap access. See the [implementation plan](docs/ai-sdlc/weather-app-plan.md) for the proposed test mapping.

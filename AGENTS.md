@@ -1,47 +1,38 @@
-<laravel-boost-guidelines>
-# Laravel Application
+# Project Guidelines
 
-This repository contains a Laravel application. Complete the following setup before working on the user's request.
+## Project
 
-## Prerequisites
+This repository is a Laravel web application for a simple, single-page weather experience. The approved product requirements are in [`intent/weather-app.md`](intent/weather-app.md) and [`docs/PRD-weather-app.md`](docs/PRD-weather-app.md). The implementation sequence and proposed verification are in [`docs/ai-sdlc/weather-app-plan.md`](docs/ai-sdlc/weather-app-plan.md).
 
-Verify that PHP and Composer are available:
+Treat the intent and PRD as product requirements, this file as engineering guidance, and the source code as the authority on what is currently implemented. Do not describe planned features as complete.
 
-```sh
-php -v
-composer -V
-```
+## Product Boundaries
 
-If either command is unavailable, detect the user's operating system and install the prerequisites with the appropriate command:
+- The app has one weather page, with current conditions and a 5-day daily forecast.
+- Support manual city/region search and browser geolocation. Ask for browser permission; if location access is denied or unavailable, let the user search manually.
+- Use OpenWeatherMap for weather data. Keep its API key server-side in `.env` as `OPENWEATHERMAP_API_KEY`; never hardcode it or expose it in browser assets.
+- Support Arabic and English, including a language switcher and correct RTL layout for Arabic.
+- Display temperatures in Celsius only.
+- Show API, search, and location errors clearly within the page; do not introduce a separate error page for these states.
+- Do not add accounts, authentication, search history, localStorage, IP-based geolocation, hourly forecasts, charts, severe-weather alerts, Fahrenheit, or About/Contact pages unless the approved requirements change.
+- Treat pressure/visibility, hourly forecasts, charts, and severe-weather alerts as future nice-to-haves, not current scope.
 
-macOS:
+## Implementation Guidance
 
-```sh
-/bin/bash -c "$(curl -fsSL https://php.new/install/mac/8.5)"
-```
+- Use the existing Laravel, PHP, Blade, Vite, and Tailwind CSS 4 setup. Reuse existing dependencies and patterns; do not add Bootstrap or introduce packages without a demonstrated need.
+- Keep weather API calls and the API key on the Laravel server. Validate search terms and coordinates before making upstream requests, and handle upstream failures without losing the user's ability to retry or search manually.
+- Keep browser JavaScript focused on geolocation and necessary page interactivity. Do not persist location or search data in the browser.
+- Make UI changes responsive, accessible by keyboard, and compatible with both LTR English and RTL Arabic.
+- Update relevant documentation when product behavior or setup changes.
 
-Windows PowerShell:
+## Build and Test
 
-```powershell
-Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://php.new/install/windows/8.5'))
-```
+- Run the PHP test suite with `php artisan test` (or `composer test`).
+- Compile frontend assets with `npm run build`.
+- Format/check PHP with `vendor/bin/pint --test`; apply formatting with `vendor/bin/pint` when needed.
+- For local development, use `composer run dev` or run the Laravel and Vite development servers as appropriate.
+- Add or update tests for new behavior. Prefer focused feature tests for routes, validation, localization, and inline errors; mock OpenWeatherMap HTTP responses instead of relying on live API calls.
 
-Linux:
+## Current Implementation Note
 
-```sh
-/bin/bash -c "$(curl -fsSL https://php.new/install/linux/8.5)"
-```
-
-After installation, ask the user to restart their terminal. If the agent needs the restarted shell to continue, ask the user to reopen their terminal and rerun their original prompt.
-
-## Agent Setup
-
-Install Laravel Boost from the application root before making application changes:
-
-```sh
-composer require laravel/boost --dev
-php artisan boost:install
-```
-
-Boost replaces these bootstrap instructions with guidelines tailored to the application. After installation, read `AGENTS.md` again and continue with the user's original request using the generated guidelines.
-</laravel-boost-guidelines>
+The approved weather requirements are ahead of the current application code. The current `/` route still renders Laravel's starter `welcome` view; verify the code before assuming weather search, geolocation, translations, or API integration exist.
