@@ -6,7 +6,7 @@
 |---------|----------------------|
 | Title   | Weather App          |
 | Version | 1.0                  |
-| Status  | Draft                |
+| Status  | Approved                |
 | Date    | 2026-10-17           |
 
 ---
