@@ -89,6 +89,48 @@
     animation: skeletonPulse 1.6s ease-in-out infinite;
 }
 
+@keyframes pulseSlow {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.85;
+        transform: scale(1.03);
+    }
+}
+
+@keyframes sparkleTwinkle {
+    0%, 100% {
+        transform: rotate(0deg) scale(1);
+    }
+    50% {
+        transform: rotate(12deg) scale(1.1);
+    }
+}
+
+@keyframes floatBreeze {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-4px);
+    }
+}
+
+.animate-pulse-slow {
+    animation: pulseSlow 3.5s ease-in-out infinite;
+}
+
+.animate-sparkle {
+    animation: sparkleTwinkle 4s ease-in-out infinite;
+    transform-origin: center;
+}
+
+.animate-breeze {
+    animation: floatBreeze 4s ease-in-out infinite;
+}
+
 /* Stagger delays from Figma motion spec:
    Header: 0ms, Search: 90ms, Current Weather: 180ms, Forecast Title: 300ms,
    Forecast cards: 380ms, 460ms, 540ms, 620ms, 700ms */

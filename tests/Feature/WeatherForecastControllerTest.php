@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Ai\Agents\WeatherForecastAgent;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Http;
+use Laravel\Ai\AnonymousAgent;
 use Tests\TestCase;
 
 class WeatherForecastControllerTest extends TestCase
@@ -35,8 +35,8 @@ class WeatherForecastControllerTest extends TestCase
             'api.openweathermap.org/data/2.5/forecast*' => Http::response($this->forecastPayload($now)),
         ]);
 
-        WeatherForecastAgent::fake([
-            'توقع لطيف ومناسب للأنشطة الخارجية مع درجات حرارة معتدلة.',
+        AnonymousAgent::fake([
+            "الأجواء ستكون مشمسة ولطيفة نهاراً بدرجة حرارة تقارب 23 درجة مئوية.\n---\nننصح بارتداء سترة خفيفة في المساء والتخطيط للأنشطة الخارجية بحرية.",
         ]);
 
         $response = $this->post(route('weather.forecast'), [
@@ -48,7 +48,12 @@ class WeatherForecastControllerTest extends TestCase
         $response->assertOk()
             ->assertSee('Amman')
             ->assertSee($targetDate)
-            ->assertSee('توقع لطيف ومناسب للأنشطة الخارجية')
+            ->assertSee('نظرة عامة على الأجواء')
+            ->assertSee('الأجواء ستكون مشمسة ولطيفة نهاراً')
+            ->assertSee('نصائح وتوصيات اليوم')
+            ->assertSee('ننصح بارتداء سترة خفيفة في المساء')
+            ->assertSee('animate-breeze', false)
+            ->assertSee('animate-sparkle', false)
             ->assertDontSee('owm-secret-key-12345');
     }
 
@@ -64,7 +69,7 @@ class WeatherForecastControllerTest extends TestCase
             'api.openweathermap.org/data/2.5/forecast*' => Http::response($this->forecastPayload($now)),
         ]);
 
-        WeatherForecastAgent::fake([
+        AnonymousAgent::fake([
             'Expect chilly winter weather in London with frequent overcast skies.',
         ]);
 

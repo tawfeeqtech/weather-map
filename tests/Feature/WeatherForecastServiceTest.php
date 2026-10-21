@@ -2,11 +2,11 @@
 
 namespace Tests\Feature;
 
-use App\Ai\Agents\WeatherForecastAgent;
 use App\Exceptions\WeatherServiceException;
 use App\Services\WeatherForecastService;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Http;
+use Laravel\Ai\AnonymousAgent;
 use Tests\TestCase;
 
 class WeatherForecastServiceTest extends TestCase
@@ -37,8 +37,8 @@ class WeatherForecastServiceTest extends TestCase
             'api.openweathermap.org/data/2.5/forecast*' => Http::response($this->forecastPayload($now)),
         ]);
 
-        WeatherForecastAgent::fake([
-            'الطقس سيكون لطيفاً ومشمساً بدرجة حرارة تصل إلى 23 درجة مئوية. نوصي بارتداء ملابس خفيفة والاستمتاع بالهواء الطلق.',
+        AnonymousAgent::fake([
+            "الطقس سيكون لطيفاً ومشمساً بدرجة حرارة تصل إلى 23 درجة مئوية.\n---\nنوصي بارتداء ملابس خفيفة والاستمتاع بالهواء الطلق.",
         ]);
 
         /** @var WeatherForecastService $service */
@@ -55,8 +55,10 @@ class WeatherForecastServiceTest extends TestCase
         $this->assertNotNull($result['icon']);
         $this->assertFalse($result['ai_failed']);
         $this->assertStringContainsString('الطقس سيكون لطيفاً', (string) $result['ai_summary']);
+        $this->assertStringContainsString('الطقس سيكون لطيفاً', (string) $result['ai_overview']);
+        $this->assertStringContainsString('نوصي بارتداء ملابس خفيفة', (string) $result['ai_tips']);
 
-        WeatherForecastAgent::assertPrompted(function ($prompt) use ($targetDate): bool {
+        AnonymousAgent::assertPrompted(function ($prompt) use ($targetDate): bool {
             return $prompt->contains('Amman') && $prompt->contains($targetDate);
         });
     }
@@ -73,7 +75,7 @@ class WeatherForecastServiceTest extends TestCase
             'api.openweathermap.org/data/2.5/forecast*' => Http::response($this->forecastPayload($now)),
         ]);
 
-        WeatherForecastAgent::fake([
+        AnonymousAgent::fake([
             'Expect cool and possibly rainy autumnal conditions in Paris around this time. A warm coat and an umbrella are advised.',
         ]);
 
@@ -90,7 +92,7 @@ class WeatherForecastServiceTest extends TestCase
         $this->assertFalse($result['ai_failed']);
         $this->assertStringContainsString('cool and possibly rainy', (string) $result['ai_summary']);
 
-        WeatherForecastAgent::assertPrompted(function ($prompt) use ($targetDate): bool {
+        AnonymousAgent::assertPrompted(function ($prompt) use ($targetDate): bool {
             return $prompt->contains('Paris') && $prompt->contains($targetDate) && $prompt->contains('seasonal');
         });
     }
@@ -143,7 +145,7 @@ class WeatherForecastServiceTest extends TestCase
             'api.openweathermap.org/data/2.5/forecast*' => Http::response($this->forecastPayload($now)),
         ]);
 
-        WeatherForecastAgent::fake(function (): never {
+        AnonymousAgent::fake(function (): never {
             throw new \RuntimeException('Groq rate limit exceeded');
         });
 

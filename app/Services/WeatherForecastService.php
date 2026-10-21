@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Ai\Agents\WeatherForecastAgent;
 use App\Exceptions\WeatherServiceException;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Log;
@@ -97,25 +96,65 @@ class WeatherForecastService
             );
         }
 
+        $instructions = <<<'INSTRUCTIONS'
+You are an expert meteorological and climate assistant for a bilingual weather application.
+Your goal is to provide a structured, friendly, and practical explanation of the weather for the requested city and future date.
+
+Format your response in exactly two distinct sections separated by three dashes on a new line (---):
+Section 1: 1-2 friendly sentences describing the sky conditions, temperatures in Celsius, and general atmospheric feel.
+---
+Section 2: 1-2 actionable, practical recommendations regarding clothing, outdoor plans, or comfort.
+
+Rules:
+1. Speak strictly in the language requested by the user prompt ('ar' for Arabic or 'en' for English).
+2. All temperatures must be expressed in Celsius (°C). Never mention Fahrenheit.
+3. If the date is a near-term forecast supported by radar/meteorological data, explain what to expect based on the provided numbers.
+4. If the date is far in the future (>5 days ahead), explain seasonal climate patterns and clearly state that it is a seasonal estimate.
+5. Do NOT write section titles or markdown headers like "Section 1:". Just output the content of section 1, then "---", then the content of section 2.
+INSTRUCTIONS;
+
+        $provider = 'groq';
+        $model = (string) config('ai.providers.groq.models.text.default', env('GROQ_MODEL', 'llama-3.3-70b-versatile'));
+
         $aiSummary = null;
+        $aiOverview = null;
+        $aiTips = null;
         $aiFailed = false;
 
         try {
-            $response = (new WeatherForecastAgent)->prompt($prompt);
+            $response = \Laravel\Ai\agent($instructions)->prompt(
+                $prompt,
+                provider: $provider,
+                model: $model,
+            );
             $aiSummary = trim((string) $response->text);
 
             if ($aiSummary === '') {
                 $aiFailed = true;
                 $aiSummary = null;
+            } else {
+                if (str_contains($aiSummary, '---')) {
+                    $segments = array_map('trim', explode('---', $aiSummary, 2));
+                    $aiOverview = $segments[0] !== '' ? $segments[0] : null;
+                    $aiTips = $segments[1] !== '' ? $segments[1] : null;
+                } elseif (str_contains($aiSummary, "\n\n")) {
+                    $segments = array_map('trim', explode("\n\n", $aiSummary, 2));
+                    $aiOverview = $segments[0] !== '' ? $segments[0] : null;
+                    $aiTips = $segments[1] !== '' ? $segments[1] : null;
+                }
+
+                $aiOverview ??= $aiSummary;
             }
         } catch (Throwable $exception) {
-            Log::warning('WeatherForecastAgent execution failed', [
+            Log::warning('AI weather forecast generation failed', [
                 'city' => $canonicalCity,
                 'date' => $targetDate->toDateString(),
                 'error' => $exception->getMessage(),
             ]);
             $aiFailed = true;
             $aiSummary = null;
+            $aiOverview = null;
+            $aiTips = null;
         }
 
         if ($isSeasonal && $aiFailed) {
@@ -133,6 +172,8 @@ class WeatherForecastService
             'description' => $description,
             'icon' => $icon,
             'ai_summary' => $aiSummary,
+            'ai_overview' => $aiOverview,
+            'ai_tips' => $aiTips,
             'ai_failed' => $aiFailed,
         ];
     }

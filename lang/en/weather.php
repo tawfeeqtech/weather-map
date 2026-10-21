@@ -38,7 +38,9 @@ return [
     'future_radar_badge' => '5-Day Forecast',
     'future_disclaimer' => 'Weather forecasts for future dates are estimates and subject to atmospheric variation.',
     'future_seasonal_notice' => 'This date is beyond the 5-day radar window. The forecast below is an AI-powered seasonal estimate based on historical climate data.',
-    'ai_summary_title' => 'AI Weather Summary',
+    'ai_summary_title' => 'AI Forecast & Insights',
+    'ai_overview_title' => 'Atmosphere & Outlook',
+    'ai_tips_title' => 'Daily Tips & Recommendations',
     'ai_unavailable_notice' => 'AI summary is temporarily unavailable, but numerical forecast data is shown above.',
     'errors' => [
         'invalid_search' => 'Enter a valid city or region name, then try again.',

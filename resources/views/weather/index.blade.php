@@ -443,23 +443,83 @@
                     </p>
                 @endif
 
-                {{-- AI Explanation Card --}}
-                <div class="rounded-2xl border border-[#D6DCD0] bg-gradient-to-br from-[#E8EDE3]/50 via-[#FDFCF8] to-[#FDFCF8] p-5 sm:p-6 shadow-xs">
-                    <div class="flex items-center gap-2 text-[#405F4C] mb-2.5">
-                        <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48 2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48 2.83-2.83"/>
-                        </svg>
-                        <h4 class="text-sm font-bold uppercase tracking-wider text-[#405F4C]">{{ __('weather.ai_summary_title') }}</h4>
+                {{-- Interactive AI Insights Section --}}
+                <div class="space-y-4">
+                    {{-- Section Bar with pulsing AI badge --}}
+                    <div class="flex items-center justify-between border-b border-[#D6DCD0]/70 pb-3">
+                        <div class="flex items-center gap-2.5">
+                            <div class="flex size-8 items-center justify-center rounded-xl bg-gradient-to-br from-[#405F4C] to-[#283D34] text-white shadow-xs">
+                                <svg class="size-4.5 animate-sparkle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
+                                    <path d="M5 3v4M19 17v4M3 5h4M17 19h4"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="text-sm sm:text-base font-bold text-[#283D34] leading-tight">{{ __('weather.ai_summary_title') }}</h4>
+                            </div>
+                        </div>
+
+                        <span class="inline-flex items-center gap-1.5 rounded-full bg-[#E8EDE3] px-3 py-1 text-xs font-semibold text-[#405F4C] border border-[#BFCCB8]/60">
+                            <span class="size-2 rounded-full bg-[#405F4C] animate-pulse"></span>
+                            Groq AI
+                        </span>
                     </div>
 
                     @if($futureForecast['ai_failed'])
-                        <p class="text-sm text-[#923E30] font-medium">
+                        <div class="rounded-2xl border border-[#923E30]/20 bg-[#923E30]/10 p-4 text-sm font-medium text-[#923E30]">
                             {{ __('weather.ai_unavailable_notice') }}
-                        </p>
+                        </div>
                     @else
-                        <p class="text-base sm:text-[17px] font-normal leading-relaxed text-[#283D34]">
-                            {{ $futureForecast['ai_summary'] }}
-                        </p>
+                        {{-- Distinct Interactive Cards --}}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4">
+                            {{-- Card 1: Outlook & Atmosphere --}}
+                            <article class="group relative overflow-hidden rounded-2xl border border-[#D6DCD0] bg-gradient-to-br from-[#FDFCF8] via-[#FAFBF8] to-[#EFF3EB] p-5 shadow-xs transition duration-300 hover:-translate-y-1 hover:shadow-md hover:border-[#BFCCB8]">
+                                <div class="flex items-start gap-3.5">
+                                    {{-- Animated Weather/Atmosphere SVG Icon --}}
+                                    <div class="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-[#E8EDE3] text-[#405F4C] shadow-xs transition group-hover:scale-105">
+                                        <svg class="size-6 animate-breeze" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                            <circle cx="12" cy="12" r="4" class="animate-pulse-slow"/>
+                                            <path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" opacity="0.6"/>
+                                            <path class="animate-cloud-drift" d="M17 17a4 4 0 0 0 0-8h-.5A5 5 0 0 0 7 11a3.5 3.5 0 0 0 1 7h9z"/>
+                                        </svg>
+                                    </div>
+
+                                    <div class="flex-1 min-w-0">
+                                        <h5 class="text-xs font-bold uppercase tracking-wider text-[#405F4C] mb-1.5 flex items-center gap-1.5">
+                                            <span>{{ __('weather.ai_overview_title') }}</span>
+                                        </h5>
+                                        <p class="text-[14px] sm:text-[15px] font-normal leading-relaxed text-[#283D34]">
+                                            {{ $futureForecast['ai_overview'] ?? $futureForecast['ai_summary'] }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </article>
+
+                            {{-- Card 2: Daily Tips & Recommendations --}}
+                            @if(!empty($futureForecast['ai_tips']))
+                                <article class="group relative overflow-hidden rounded-2xl border border-[#D6DCD0] bg-gradient-to-br from-[#FDFCF8] via-[#FAF9F5] to-[#F5EFE6] p-5 shadow-xs transition duration-300 hover:-translate-y-1 hover:shadow-md hover:border-[#E5CDB2]">
+                                    <div class="flex items-start gap-3.5">
+                                        {{-- Animated Glowing Lightbulb / Tip SVG Icon --}}
+                                        <div class="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-700 shadow-xs transition group-hover:scale-105">
+                                            <svg class="size-6 animate-pulse-slow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/>
+                                                <path d="M9 18h6"/>
+                                                <path d="M10 22h4"/>
+                                            </svg>
+                                        </div>
+
+                                        <div class="flex-1 min-w-0">
+                                            <h5 class="text-xs font-bold uppercase tracking-wider text-amber-800 mb-1.5 flex items-center gap-1.5">
+                                                <span>{{ __('weather.ai_tips_title') }}</span>
+                                            </h5>
+                                            <p class="text-[14px] sm:text-[15px] font-normal leading-relaxed text-[#283D34]">
+                                                {{ $futureForecast['ai_tips'] }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </article>
+                            @endif
+                        </div>
                     @endif
                 </div>
 
