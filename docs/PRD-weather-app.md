@@ -51,6 +51,7 @@ No specific demographic or technical proficiency is assumed.
 - Browser-based geolocation with fallback to manual search
 - Bilingual interface (Arabic + English) with language switcher
 - Celsius temperature display
+- Future date AI forecast (dedicated section with manual city & date picker, OpenWeatherMap 5-day radar data + Groq LLM explanations, and seasonal climate estimates up to 365 days)
 - Error handling with inline messages (no separate error page)
 - Single-page application
 
@@ -129,6 +130,18 @@ No specific demographic or technical proficiency is assumed.
 | FR-6.2 | Handle API fetch failures gracefully |
 | FR-6.3 | Handle invalid or empty search input |
 | FR-6.4 | Handle geolocation permission denial without breaking the UI |
+
+### FR-7: Future Date AI Forecast
+
+| # | Requirement |
+|---|---|
+| FR-7.1 | Dedicated section allowing manual entry of a city name and selection of a future date (from tomorrow up to 365 days) |
+| FR-7.2 | Validate inputs and reject past dates or invalid cities with inline error messages on the same page |
+| FR-7.3 | For dates within 5 days, fetch meteorological forecast data from OpenWeatherMap and synthesize a friendly 2-3 sentence explanation with practical advice using Laravel AI SDK (Groq) |
+| FR-7.4 | For dates beyond 5 days (up to 365 days), provide a seasonal climate estimate based on historical patterns with a clear estimate disclaimer |
+| FR-7.5 | Handle Groq failures gracefully by displaying numerical forecast data (when available) with an inline notice |
+| FR-7.6 | Support bilingual output (Arabic with RTL / English with LTR) and Celsius temperatures only |
+| FR-7.7 | Ensure external API credentials (`OPENWEATHERMAP_API_KEY`, `GROQ_API_KEY`) remain strictly server-side |
 
 ---
 

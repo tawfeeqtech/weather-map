@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\WeatherServiceException;
+use App\Services\WeatherForecastService;
 use App\Services\WeatherService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
@@ -12,7 +13,10 @@ use Symfony\Component\HttpFoundation\Response;
 
 class WeatherController extends Controller
 {
-    public function __construct(private readonly WeatherService $weatherService) {}
+    public function __construct(
+        private readonly WeatherService $weatherService,
+        private readonly WeatherForecastService $weatherForecastService,
+    ) {}
 
     public function index(Request $request): View
     {
@@ -23,6 +27,10 @@ class WeatherController extends Controller
             'weather' => null,
             'cityQuery' => '',
             'error' => null,
+            'futureForecast' => null,
+            'futureCity' => (string) $request->query('future_city', ''),
+            'futureDate' => (string) $request->query('future_date', ''),
+            'futureError' => null,
         ]);
     }
 
@@ -110,6 +118,63 @@ class WeatherController extends Controller
         }
     }
 
+    public function forecast(Request $request): View|Response
+    {
+        $language = $this->setLanguage($request->input('lang'));
+        $city = trim((string) $request->input('city', ''));
+        $date = trim((string) $request->input('date', ''));
+
+        $validator = Validator::make($request->all(), [
+            'city' => [
+                'required',
+                'string',
+                'min:2',
+                'max:100',
+                'regex:/^[\p{L}\p{M}\p{N} .,\x27’()\-]+$/u',
+            ],
+            'date' => [
+                'required',
+                'date_format:Y-m-d',
+            ],
+        ]);
+
+        if ($validator->fails()) {
+            $errorMessage = $validator->errors()->has('date')
+                ? __('weather.errors.invalid_date')
+                : __('weather.errors.invalid_search');
+
+            return $this->weatherPage(
+                language: $language,
+                cityQuery: '',
+                futureCity: $city,
+                futureDate: $date,
+                futureError: $errorMessage,
+                status: 422,
+            );
+        }
+
+        try {
+            $futureForecast = $this->weatherForecastService->getForecastForDate($city, $date, $language);
+
+            return $this->weatherPage(
+                language: $language,
+                cityQuery: '',
+                futureForecast: $futureForecast,
+                futureCity: $city,
+                futureDate: $date,
+            );
+        } catch (WeatherServiceException $exception) {
+            return $this->weatherPage(
+                language: $language,
+                cityQuery: '',
+                futureCity: $city,
+                futureDate: $date,
+                futureError: __('weather.errors.'.$exception->reason),
+                status: $exception->status,
+            );
+        }
+    }
+
     private function setLanguage(mixed $candidate): string
     {
         $language = in_array($candidate, ['en', 'ar'], true)
@@ -130,6 +195,10 @@ class WeatherController extends Controller
         string $cityQuery,
         ?array $weather = null,
         ?string $error = null,
+        ?array $futureForecast = null,
+        string $futureCity = '',
+        string $futureDate = '',
+        ?string $futureError = null,
         int $status = 200,
     ): View|Response {
         $view = view('weather.index', [
@@ -137,6 +206,10 @@ class WeatherController extends Controller
             'weather' => $weather,
             'cityQuery' => $cityQuery,
             'error' => $error,
+            'futureForecast' => $futureForecast,
+            'futureCity' => $futureCity,
+            'futureDate' => $futureDate,
+            'futureError' => $futureError,
         ]);
 
         return $status === 200 ? $view : response($view, $status);
